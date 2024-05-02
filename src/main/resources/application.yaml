@@ -1,0 +1,68 @@
+spring:
+  profiles:
+    active: ${ACTIVE_PROFILE:dev}
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+      fail-on-empty-beans: false
+      close-closeable: true
+      flush-after-write-value: true
+    deserialization:
+      fail-on-unknown-properties: false
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    open-in-view: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: true
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        globally_quoted_identifiers: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  sql:
+    init:
+      mode: never
+      continue-on-error: false
+      schema-locations: classpath:/data/schema.sql
+      data-locations: classpath:/data/data.sql
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 1000MB
+      max-request-size: 1000MB
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    default-encoding: UTF-8
+    properties:
+      mail:
+        mime:
+          charset: UTF
+        smtp:
+          write-timout: 10000
+          connection-timeout: 10000
+          timeout: 10000
+          auth: true
+          starttls:
+            enable: true
+            required: true
+    verify:
+      host: ${VERIFY_MAIL_HOST}
+server:
+  port: ${CONTAINER_PORT:8080}
+  error:
+    path: /user/error
+    whitelabel:
+      enabled: false
+jwt:
+  expiration: ${JWT_EXPIRATION}
+  secret: ${JWT_SECRET}

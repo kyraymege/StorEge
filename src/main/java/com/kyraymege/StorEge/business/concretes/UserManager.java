@@ -1,0 +1,129 @@
+package com.kyraymege.StorEge.business.concretes;
+
+import com.kyraymege.StorEge.business.abstracts.UserService;
+import com.kyraymege.StorEge.cache.CacheStore;
+import com.kyraymege.StorEge.domain.RequestContext;
+import com.kyraymege.StorEge.dto.UserDto;
+import com.kyraymege.StorEge.entity.Confirmation;
+import com.kyraymege.StorEge.entity.Credential;
+import com.kyraymege.StorEge.entity.Role;
+import com.kyraymege.StorEge.entity.User;
+import com.kyraymege.StorEge.enums.Authority;
+import com.kyraymege.StorEge.enums.EventType;
+import com.kyraymege.StorEge.enums.LoginType;
+import com.kyraymege.StorEge.event.UserEvent;
+import com.kyraymege.StorEge.exceptions.APIException;
+import com.kyraymege.StorEge.repositories.ConfirmationRepository;
+import com.kyraymege.StorEge.repositories.CredentialsRepository;
+import com.kyraymege.StorEge.repositories.RoleRepository;
+import com.kyraymege.StorEge.repositories.UserRepository;
+import com.kyraymege.StorEge.utils.UserUtils;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.Optional;
+
+import static com.kyraymege.StorEge.utils.UserUtils.EntityToDto;
+
+@Service
+@Transactional(rollbackOn = Exception.class)
+@RequiredArgsConstructor
+@Slf4j
+public class UserManager implements UserService {
+
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final CredentialsRepository credentialsRepository;
+    private final ConfirmationRepository confirmationRepository;
+    private final BCryptPasswordEncoder encoder;
+    private final CacheStore<String,Integer> userCache;
+    private final ApplicationEventPublisher applicationEventPublisher;
+
+    @Override
+    public void createUser(String firstName, String lastName, String email, String password) {
+        var user = userRepository.save(createNewUser(firstName, lastName, email));
+        var credentials = new Credential(user, encoder.encode(password));
+        credentialsRepository.save(credentials);
+        var confirmation = new Confirmation(user);
+        confirmationRepository.save(confirmation);
+        applicationEventPublisher.publishEvent(new UserEvent(user, EventType.REGISTIRATION, Map.of("key", confirmation.getKey())));
+    }
+
+    @Override
+    public Role getRoleName(String name) {
+        var role = roleRepository.findByNameIgnoreCase(name);
+        return role.orElseThrow(() -> new APIException("Role not found"));
+    }
+
+    @Override
+    public void verifyAccountToken(String token) {
+        var confirmation = getUserConfirmation(token);
+        var user = getUserEntityByEmail(confirmation.getUser().getEmail());
+        user.setEnabled(true);
+        userRepository.save(user);
+        confirmationRepository.delete(confirmation);
+    }
+
+    @Override
+    public void updateLoginAttempt(String email, LoginType loginType) {
+        var user = getUserEntityByEmail(email);
+        RequestContext.setUserId(user.getId());
+        switch (loginType) {
+            case LOGIN_ATTEMPT -> {
+                if (userCache.get(user.getEmail()) == null) {
+                    user.setLoginAttempts(0);
+                    user.setAccountNonLocked(true);
+                }
+                user.setLoginAttempts(user.getLoginAttempts() + 1);
+                userCache.put(user.getEmail(), user.getLoginAttempts());
+                if (userCache.get(user.getEmail()) >= 5) {
+                    user.setAccountNonLocked(false);
+                }
+            }
+            case LOGIN_SUCCESS -> {
+                user.setAccountNonLocked(true);
+                user.setLoginAttempts(0);
+                user.setLastLogin(LocalDateTime.now());
+                userCache.remove(user.getEmail());
+            }
+        }
+        userRepository.save(user);
+    }
+
+    @Override
+    public UserDto getUserByUserId(String userId) {
+        var user = userRepository.findUserByUserId(userId).orElseThrow(() -> new APIException("User not found"));
+        return EntityToDto(user, user.getRole(), getUserCredentialById(user.getId()));
+    }
+
+    @Override
+    public UserDto getUserByEmail(String email) {
+        User user = getUserEntityByEmail(email);
+        return EntityToDto(user, user.getRole(), getUserCredentialById(user.getId()));
+    }
+
+    @Override
+    public Credential getUserCredentialById(Long userId) {
+        var credentialByUserId = credentialsRepository.getCredentialByUserId(userId);
+        return credentialByUserId.orElseThrow(() -> new APIException("Credential not found"));
+    }
+
+    private User getUserEntityByEmail(String email) {
+        return userRepository.findByEmailIgnoreCase(email).orElseThrow(() -> new APIException("User not found"));
+    }
+
+    private Confirmation getUserConfirmation(String token) {
+        return confirmationRepository.findByKey(token).orElseThrow(()-> new APIException("Confirmation not found"));
+    }
+
+    private User createNewUser(String firstName, String lastName, String email) {
+        var role = getRoleName(Authority.USER.name());
+        return UserUtils.createUserEntity(firstName, lastName, email,role);
+    }
+}
