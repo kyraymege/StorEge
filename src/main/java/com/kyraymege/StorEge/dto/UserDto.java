@@ -25,6 +25,7 @@ public class UserDto {
     private String bio;
     private String profilePicture;
     private String qrCodeSecret;
+    private String qrCodeImageUri;
     private String lastLogin;
     private String createdAt;
     private String updatedAt;

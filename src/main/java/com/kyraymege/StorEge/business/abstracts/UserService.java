@@ -16,10 +16,12 @@ public interface UserService {
     Role getRoleName(String name);
     void verifyAccountToken(String token);
     void updateLoginAttempt(String email, LoginType loginType);
-
     UserDto getUserByUserId(String userId);
-
     UserDto getUserByEmail(String email);
-
     Credential getUserCredentialById(Long id);
+    UserDto setupMfa(Long id);
+
+    UserDto cancelMfa(Long id);
+
+    UserDto verifyQrCode(String userId, String qrCode);
 }

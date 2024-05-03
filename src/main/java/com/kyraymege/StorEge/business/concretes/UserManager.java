@@ -18,6 +18,12 @@ import com.kyraymege.StorEge.repositories.CredentialsRepository;
 import com.kyraymege.StorEge.repositories.RoleRepository;
 import com.kyraymege.StorEge.repositories.UserRepository;
 import com.kyraymege.StorEge.utils.UserUtils;
+import dev.samstevens.totp.code.CodeGenerator;
+import dev.samstevens.totp.code.CodeVerifier;
+import dev.samstevens.totp.code.DefaultCodeGenerator;
+import dev.samstevens.totp.code.DefaultCodeVerifier;
+import dev.samstevens.totp.time.SystemTimeProvider;
+import dev.samstevens.totp.time.TimeProvider;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,9 +33,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.Optional;
 
-import static com.kyraymege.StorEge.utils.UserUtils.EntityToDto;
+import static com.kyraymege.StorEge.utils.UserUtils.*;
 
 @Service
 @Transactional(rollbackOn = Exception.class)
@@ -112,6 +117,45 @@ public class UserManager implements UserService {
     public Credential getUserCredentialById(Long userId) {
         var credentialByUserId = credentialsRepository.getCredentialByUserId(userId);
         return credentialByUserId.orElseThrow(() -> new APIException("Credential not found"));
+    }
+
+    @Override
+    public UserDto setupMfa(Long id) {
+        var user = userRepository.findById(id).orElseThrow(() -> new APIException("User not found"));
+        var codeSecret = qrCodeSecret.get();
+        user.setQrCodeImageUri(qrCodeImageUri.apply(user.getEmail(), codeSecret));
+        user.setQrCodeSecret(codeSecret);
+        user.setMfa(true);
+        userRepository.save(user);
+        return EntityToDto(user, user.getRole(), getUserCredentialById(user.getId()));
+    }
+
+    @Override
+    public UserDto cancelMfa(Long id) {
+        var user = userRepository.findById(id).orElseThrow(() -> new APIException("User not found"));
+        user.setQrCodeSecret("");
+        user.setQrCodeImageUri("");
+        user.setMfa(false);
+        userRepository.save(user);
+        return EntityToDto(user, user.getRole(), getUserCredentialById(user.getId()));
+    }
+
+    @Override
+    public UserDto verifyQrCode(String userId, String qrCode) {
+        var user = userRepository.findUserByUserId(userId).orElseThrow(() -> new APIException("User not found"));
+        verifyCode(qrCode, user.getQrCodeSecret());
+        return EntityToDto(user, user.getRole(), getUserCredentialById(user.getId()));
+    }
+
+    private boolean verifyCode(String qrCode, String qrCodeSecret) {
+        TimeProvider timeProvider = new SystemTimeProvider();
+        CodeGenerator codeGenerator = new DefaultCodeGenerator();
+        CodeVerifier codeVerifier = new DefaultCodeVerifier(codeGenerator, timeProvider);
+        if (codeVerifier.isValidCode(qrCodeSecret, qrCode)) {
+            return true;
+        } else {
+            throw new APIException("Code is not valid. Please try again.");
+        }
     }
 
     private User getUserEntityByEmail(String email) {
