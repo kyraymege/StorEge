@@ -1,7 +1,7 @@
 package com.kyraymege.StorEge.domain;
 
-import com.kyraymege.StorEge.dto.UserDto;
-import com.kyraymege.StorEge.entity.Credential;
+import com.kyraymege.StorEge.entity.dto.UserDto;
+import com.kyraymege.StorEge.entity.concretes.Credential;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;

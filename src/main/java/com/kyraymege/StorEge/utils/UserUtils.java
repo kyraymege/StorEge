@@ -1,9 +1,9 @@
 package com.kyraymege.StorEge.utils;
 
-import com.kyraymege.StorEge.dto.UserDto;
-import com.kyraymege.StorEge.entity.Credential;
-import com.kyraymege.StorEge.entity.Role;
-import com.kyraymege.StorEge.entity.User;
+import com.kyraymege.StorEge.entity.dto.UserDto;
+import com.kyraymege.StorEge.entity.concretes.Credential;
+import com.kyraymege.StorEge.entity.concretes.Role;
+import com.kyraymege.StorEge.entity.concretes.User;
 import com.kyraymege.StorEge.exceptions.APIException;
 import dev.samstevens.totp.code.HashingAlgorithm;
 import dev.samstevens.totp.qr.QrData;
@@ -16,8 +16,8 @@ import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
-import static com.kyraymege.StorEge.consts.Constants.CRED_EXPIRED_DAYS;
-import static com.kyraymege.StorEge.consts.Constants.STOREGE;
+import static com.kyraymege.StorEge.utils.consts.Constants.CRED_EXPIRED_DAYS;
+import static com.kyraymege.StorEge.utils.consts.Constants.STOREGE;
 import static dev.samstevens.totp.util.Utils.getDataUriForImage;
 import static org.apache.logging.log4j.util.Strings.EMPTY;
 

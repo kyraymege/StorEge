@@ -1,10 +1,10 @@
-package com.kyraymege.StorEge.consts;
+package com.kyraymege.StorEge.utils.consts;
 
 public class Constants {
     public static final String BASE_PATH = "/**";
     public static final String FILE_NAME = "File-Name";
     public static final int CRED_EXPIRED_DAYS = 90;
-    public static final String[] PUBLIC_ROUTES = {"/user/login","/user/id","/user/register","/user/new/password","/user/refresh/token","/user/stream","/user/verify/accountVerification","/user/verify/resetpassword","/user/verify/qrcode","/user/login","/user/resetpassword/reset"};
+    public static final String[] PUBLIC_ROUTES = {"/user/login","/user/id","/user/register","/user/new/password","/user/refresh/token","/user/stream","/user/verify/accountVerification","/user/verify/password","/user/verify/qrcode","/user/login","/user/resetpassword", "/user/resetpassword/reset"};
     public static final String ROLE_PREFIX = "ROLE_";
     public static final String AUTHORITIES = "authorities";
     public static final String ROLE = "role";

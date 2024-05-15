@@ -1,7 +1,7 @@
 package com.kyraymege.StorEge.event;
 
-import com.kyraymege.StorEge.entity.User;
-import com.kyraymege.StorEge.enums.EventType;
+import com.kyraymege.StorEge.entity.concretes.User;
+import com.kyraymege.StorEge.entity.enums.EventType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

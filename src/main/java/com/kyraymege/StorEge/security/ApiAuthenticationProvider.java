@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static com.kyraymege.StorEge.consts.Constants.CRED_EXPIRED_DAYS;
+import static com.kyraymege.StorEge.utils.consts.Constants.CRED_EXPIRED_DAYS;
 
 @Component
 @RequiredArgsConstructor

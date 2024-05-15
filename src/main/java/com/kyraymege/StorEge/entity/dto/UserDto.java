@@ -1,16 +1,6 @@
-package com.kyraymege.StorEge.dto;
+package com.kyraymege.StorEge.entity.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.kyraymege.StorEge.entity.Role;
-import jakarta.persistence.Column;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToOne;
 import lombok.Data;
-
-import java.time.LocalDateTime;
-
-import static jakarta.persistence.FetchType.EAGER;
 
 @Data
 public class UserDto {

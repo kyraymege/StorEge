@@ -3,14 +3,14 @@ package com.kyraymege.StorEge.business.concretes;
 import com.kyraymege.StorEge.business.abstracts.UserService;
 import com.kyraymege.StorEge.cache.CacheStore;
 import com.kyraymege.StorEge.domain.RequestContext;
-import com.kyraymege.StorEge.dto.UserDto;
-import com.kyraymege.StorEge.entity.Confirmation;
-import com.kyraymege.StorEge.entity.Credential;
-import com.kyraymege.StorEge.entity.Role;
-import com.kyraymege.StorEge.entity.User;
-import com.kyraymege.StorEge.enums.Authority;
-import com.kyraymege.StorEge.enums.EventType;
-import com.kyraymege.StorEge.enums.LoginType;
+import com.kyraymege.StorEge.entity.dto.UserDto;
+import com.kyraymege.StorEge.entity.concretes.Confirmation;
+import com.kyraymege.StorEge.entity.concretes.Credential;
+import com.kyraymege.StorEge.entity.concretes.Role;
+import com.kyraymege.StorEge.entity.concretes.User;
+import com.kyraymege.StorEge.entity.enums.Authority;
+import com.kyraymege.StorEge.entity.enums.EventType;
+import com.kyraymege.StorEge.entity.enums.LoginType;
 import com.kyraymege.StorEge.event.UserEvent;
 import com.kyraymege.StorEge.exceptions.APIException;
 import com.kyraymege.StorEge.repositories.ConfirmationRepository;
@@ -35,6 +35,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 import static com.kyraymege.StorEge.utils.UserUtils.*;
+import static com.kyraymege.StorEge.utils.validation.UserValidation.verifyAccountStatus;
 
 @Service
 @Transactional(rollbackOn = Exception.class)
@@ -147,6 +148,37 @@ public class UserManager implements UserService {
         return EntityToDto(user, user.getRole(), getUserCredentialById(user.getId()));
     }
 
+    @Override
+    public void resetPassword(String email) {
+        var user = getUserEntityByEmail(email);
+        var confirmation = getUserConfirmation(user);
+        if(confirmation != null) {
+            applicationEventPublisher.publishEvent(new UserEvent(user, EventType.RESETPASSWORD, Map.of("key", confirmation.getKey())));
+        }else{
+            var newConfirmation = new Confirmation(user);
+            confirmationRepository.save(newConfirmation);
+            applicationEventPublisher.publishEvent(new UserEvent(user, EventType.RESETPASSWORD, Map.of("key", newConfirmation.getKey())));
+        }
+    }
+
+    @Override
+    public UserDto verifyResetPasswordToken(String token) {
+        var confirmation = getUserConfirmation(token);
+        var user = getUserEntityByEmail(confirmation.getUser().getEmail());
+        verifyAccountStatus(user);
+        confirmationRepository.delete(confirmation);
+        return EntityToDto(user, user.getRole(), getUserCredentialById(user.getId()));
+    }
+
+    @Override
+    public void updatePassword(String userId, String newPassword, String confirmNewPassword) {
+        if(!newPassword.equals(confirmNewPassword)){ throw new APIException("Passwords do not match");}
+        var user = getUserByUserId(userId);
+        var credential = getUserCredentialById(user.getId());
+        credential.setPassword(encoder.encode(newPassword));
+        credentialsRepository.save(credential);
+    }
+
     private boolean verifyCode(String qrCode, String qrCodeSecret) {
         TimeProvider timeProvider = new SystemTimeProvider();
         CodeGenerator codeGenerator = new DefaultCodeGenerator();
@@ -164,6 +196,10 @@ public class UserManager implements UserService {
 
     private Confirmation getUserConfirmation(String token) {
         return confirmationRepository.findByKey(token).orElseThrow(()-> new APIException("Confirmation not found"));
+    }
+
+    private Confirmation getUserConfirmation(User user) {
+        return confirmationRepository.findByUser(user).orElse(null);
     }
 
     private User createNewUser(String firstName, String lastName, String email) {

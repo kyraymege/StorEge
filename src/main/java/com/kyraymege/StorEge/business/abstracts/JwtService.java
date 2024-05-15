@@ -2,8 +2,8 @@ package com.kyraymege.StorEge.business.abstracts;
 
 import com.kyraymege.StorEge.domain.Token;
 import com.kyraymege.StorEge.domain.TokenData;
-import com.kyraymege.StorEge.dto.UserDto;
-import com.kyraymege.StorEge.enums.TokenType;
+import com.kyraymege.StorEge.entity.dto.UserDto;
+import com.kyraymege.StorEge.entity.enums.TokenType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 

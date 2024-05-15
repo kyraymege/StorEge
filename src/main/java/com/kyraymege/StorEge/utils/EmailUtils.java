@@ -11,7 +11,7 @@ public class EmailUtils {
 
     public static String getResetPasswordMessage(String name,String host,String token){
         return "Hello "+name+",\n\n"+
-                "Thank you for registering with us. Please click on the below link to activate your account:\n\n"+
+                "Here's the reset password link :\n\n"+
                 getResetPasswordUrl(host,token) +
                 "\n\nThank you\nThe StorEge Team";
     }
@@ -20,10 +20,10 @@ public class EmailUtils {
 
 
     public static String getVerificationUrl(String host,String token){
-        return host+"/verify/accountVerification?token="+token;
+        return host+"/user/verify/accountVerification?token="+token;
     }
 
     public static String getResetPasswordUrl(String host,String token){
-        return host+"/verify/password?token="+token;
+        return host+"/user/verify/password?token="+token;
     }
 }

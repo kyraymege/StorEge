@@ -1,4 +1,4 @@
-package com.kyraymege.StorEge.function;
+package com.kyraymege.StorEge.domain.function;
 
 import java.util.Objects;
 

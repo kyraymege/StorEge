@@ -1,6 +1,7 @@
-package com.kyraymege.StorEge.entity;
+package com.kyraymege.StorEge.entity.concretes;
 
 import com.fasterxml.jackson.annotation.*;
+import com.kyraymege.StorEge.domain.Auditable;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;

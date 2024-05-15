@@ -1,6 +1,6 @@
 package com.kyraymege.StorEge.repositories;
 
-import com.kyraymege.StorEge.entity.Credential;
+import com.kyraymege.StorEge.entity.concretes.Credential;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

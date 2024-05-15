@@ -1,4 +1,4 @@
-package com.kyraymege.StorEge.dtoRequest;
+package com.kyraymege.StorEge.entity.dto.dtoRequest;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Email;

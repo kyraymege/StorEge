@@ -1,4 +1,4 @@
-package com.kyraymege.StorEge.enums;
+package com.kyraymege.StorEge.entity.enums;
 
 public enum LoginType {
     LOGIN_ATTEMPT,

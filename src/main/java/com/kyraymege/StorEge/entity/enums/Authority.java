@@ -1,7 +1,7 @@
-package com.kyraymege.StorEge.enums;
+package com.kyraymege.StorEge.entity.enums;
 
-import static com.kyraymege.StorEge.consts.Constants.ADMIN_AUTHORITIES;
-import static com.kyraymege.StorEge.consts.Constants.USER_AUTHORITIES;
+import static com.kyraymege.StorEge.utils.consts.Constants.ADMIN_AUTHORITIES;
+import static com.kyraymege.StorEge.utils.consts.Constants.USER_AUTHORITIES;
 
 public enum Authority {
     USER(USER_AUTHORITIES),

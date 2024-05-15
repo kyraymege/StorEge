@@ -1,12 +1,11 @@
 package com.kyraymege.StorEge.domain;
 
-import com.kyraymege.StorEge.dto.UserDto;
+import com.kyraymege.StorEge.entity.dto.UserDto;
 import com.kyraymege.StorEge.exceptions.APIException;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 
-import javax.security.auth.Subject;
 import java.util.Collection;
 
 public class ApiAuthentication extends AbstractAuthenticationToken {

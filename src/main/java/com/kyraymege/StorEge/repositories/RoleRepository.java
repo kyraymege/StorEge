@@ -1,6 +1,6 @@
 package com.kyraymege.StorEge.repositories;
 
-import com.kyraymege.StorEge.entity.Role;
+import com.kyraymege.StorEge.entity.concretes.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

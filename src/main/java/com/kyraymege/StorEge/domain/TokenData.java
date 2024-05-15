@@ -1,6 +1,6 @@
 package com.kyraymege.StorEge.domain;
 
-import com.kyraymege.StorEge.dto.UserDto;
+import com.kyraymege.StorEge.entity.dto.UserDto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

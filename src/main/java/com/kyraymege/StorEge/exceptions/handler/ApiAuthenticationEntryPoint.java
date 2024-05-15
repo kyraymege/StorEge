@@ -1,4 +1,4 @@
-package com.kyraymege.StorEge.handler;
+package com.kyraymege.StorEge.exceptions.handler;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

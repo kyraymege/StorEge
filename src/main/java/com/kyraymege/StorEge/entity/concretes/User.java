@@ -1,8 +1,9 @@
-package com.kyraymege.StorEge.entity;
+package com.kyraymege.StorEge.entity.concretes;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.kyraymege.StorEge.domain.Auditable;
 import jakarta.persistence.*;
 import lombok.*;
 

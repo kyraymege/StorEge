@@ -5,7 +5,7 @@ import com.kyraymege.StorEge.domain.ApiAuthentication;
 import com.kyraymege.StorEge.domain.RequestContext;
 import com.kyraymege.StorEge.domain.Token;
 import com.kyraymege.StorEge.domain.TokenData;
-import com.kyraymege.StorEge.enums.TokenType;
+import com.kyraymege.StorEge.entity.enums.TokenType;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,7 +22,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static com.kyraymege.StorEge.consts.Constants.PUBLIC_ROUTES;
+import static com.kyraymege.StorEge.utils.consts.Constants.PUBLIC_ROUTES;
 import static com.kyraymege.StorEge.utils.RequestUtils.handleErrorResponse;
 
 @Component

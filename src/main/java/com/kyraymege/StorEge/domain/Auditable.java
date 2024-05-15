@@ -1,4 +1,4 @@
-package com.kyraymege.StorEge.entity;
+package com.kyraymege.StorEge.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.kyraymege.StorEge.domain.RequestContext;

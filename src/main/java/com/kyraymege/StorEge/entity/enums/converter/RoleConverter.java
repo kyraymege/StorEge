@@ -1,6 +1,6 @@
-package com.kyraymege.StorEge.enums.converter;
+package com.kyraymege.StorEge.entity.enums.converter;
 
-import com.kyraymege.StorEge.enums.Authority;
+import com.kyraymege.StorEge.entity.enums.Authority;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 

@@ -1,7 +1,7 @@
 package com.kyraymege.StorEge.security;
 
-import com.kyraymege.StorEge.handler.ApiAccessDeniedHandler;
-import com.kyraymege.StorEge.handler.ApiAuthenticationEntryPoint;
+import com.kyraymege.StorEge.exceptions.handler.ApiAccessDeniedHandler;
+import com.kyraymege.StorEge.exceptions.handler.ApiAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.net.HttpHeaders.X_REQUESTED_WITH;
-import static com.kyraymege.StorEge.consts.Constants.*;
+import static com.kyraymege.StorEge.utils.consts.Constants.*;
 import static org.springframework.http.HttpHeaders.*;
 
 @Configuration
