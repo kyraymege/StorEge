@@ -4,6 +4,7 @@ import com.kyraymege.StorEge.entity.dto.UserDto;
 import com.kyraymege.StorEge.entity.concretes.Credential;
 import com.kyraymege.StorEge.entity.concretes.Role;
 import com.kyraymege.StorEge.entity.enums.LoginType;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
 
@@ -25,4 +26,20 @@ public interface UserService {
     UserDto verifyResetPasswordToken(String token);
 
     void updatePassword(String userId, String newPassword, String confirmNewPassword);
+
+    UserDto updateUser(String userId, String firstName, String lastName, String email, String phone, String bio);
+
+    void updateRole(String userId, String role);
+
+    void toogleAccountExpired(String userId);
+
+    void toogleAccountLocked(String userId);
+
+    void toogleAccountEnabled(String userId);
+
+    void toogleCredentialsExpired(String userId);
+
+    void updatePassword(String userId, String password, String newPassword, String confirmNewPassword);
+
+    String uploadPhoto(String userId, MultipartFile file);
 }

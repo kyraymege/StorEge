@@ -33,7 +33,7 @@ public class ApiAuthenticationProvider implements AuthenticationProvider{
         log.info(String.valueOf(user));
         if (user != null) {
             var userCredential = userService.getUserCredentialById(user.getId());
-            if(userCredential.getUpdatedAt().minusDays(CRED_EXPIRED_DAYS).isAfter(LocalDateTime.now())){
+            if(!userCredential.getUpdatedAt().plusDays(CRED_EXPIRED_DAYS).isAfter(LocalDateTime.now())){
                 throw new APIException("Password expired. Please reset your password");
             }
             var userPrincipal = new UserPrincipal(user, userCredential);
@@ -54,7 +54,7 @@ public class ApiAuthenticationProvider implements AuthenticationProvider{
     private final Consumer<UserPrincipal> validAccount = userPrincipal -> {
         if (!userPrincipal.isAccountNonLocked()) throw new LockedException("Account is locked");
         if (!userPrincipal.isEnabled()) throw new DisabledException("Account is disabled");
-        if (userPrincipal.isCredentialsNonExpired()) throw new CredentialsExpiredException("Password is expired");
+        if (!userPrincipal.isCredentialsNonExpired()) throw new CredentialsExpiredException("Password is expired");
         if (!userPrincipal.isAccountNonExpired()) throw new DisabledException("Account is expired");
     };
 

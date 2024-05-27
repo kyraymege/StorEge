@@ -30,12 +30,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import static com.kyraymege.StorEge.utils.UserUtils.*;
+import static com.kyraymege.StorEge.utils.consts.Constants.PHOTO_DIRECTORY;
 import static com.kyraymege.StorEge.utils.validation.UserValidation.verifyAccountStatus;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 @Service
 @Transactional(rollbackOn = Exception.class)
@@ -177,6 +184,100 @@ public class UserManager implements UserService {
         var credential = getUserCredentialById(user.getId());
         credential.setPassword(encoder.encode(newPassword));
         credentialsRepository.save(credential);
+    }
+
+    @Override
+    public UserDto updateUser(String userId, String firstName, String lastName, String email, String phone, String bio) {
+        var user = getUserEntityByUserId(userId);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmail(email);
+        user.setPhone(phone);
+        user.setBio(bio);
+        userRepository.save(user);
+        return EntityToDto(user, user.getRole(), getUserCredentialById(user.getId()));
+    }
+
+    @Override
+    public void updateRole(String userId, String role) {
+        var user = getUserEntityByUserId(userId);
+        user.setRole(getRoleName(role));
+        userRepository.save(user);
+    }
+
+    @Override
+    public void toogleAccountExpired(String userId) {
+        var user = getUserEntityByUserId(userId);
+        user.setAccountNonExpired(!user.isAccountNonExpired());
+        userRepository.save(user);
+    }
+
+    @Override
+    public void toogleAccountLocked(String userId) {
+        var user = getUserEntityByUserId(userId);
+        user.setAccountNonLocked(!user.isAccountNonLocked());
+        userRepository.save(user);
+    }
+
+    @Override
+    public void toogleAccountEnabled(String userId) {
+        var user = getUserEntityByUserId(userId);
+        user.setEnabled(!user.isEnabled());
+        userRepository.save(user);
+    }
+
+    // TODO: This logic is incorrect. It should be updated. Auditable will update data when it's saved.
+    @Override
+    public void toogleCredentialsExpired(String userId) {
+        var user = getUserEntityByUserId(userId);
+        var credential = getUserCredentialById(user.getId());
+        if (credential.getUpdatedAt().plusDays(90).isAfter(LocalDateTime.now())) {
+            credential.setUpdatedAt(LocalDateTime.now());
+        } else {
+            credential.setUpdatedAt(LocalDateTime.of(2000, 1, 1, 0, 0, 0));
+        }
+        userRepository.save(user);
+    }
+
+    @Override
+    public void updatePassword(String userId, String password, String newPassword, String confirmNewPassword) {
+        if(!newPassword.equals(confirmNewPassword)){ throw new APIException("Passwords do not match");}
+        var user = getUserEntityByUserId(userId);
+        verifyAccountStatus(user);
+        var credential = getUserCredentialById(user.getId());
+        if(!encoder.matches(password, credential.getPassword())){ throw new APIException("Password is incorrect"); }
+        credential.setPassword(encoder.encode(newPassword));
+        credentialsRepository.save(credential);
+    }
+
+    @Override
+    public String uploadPhoto(String userId, MultipartFile file) {
+        var user = getUserEntityByUserId(userId);
+        var photoUrl = photoFunction.apply(userId,file);
+        user.setProfilePicture(photoUrl+"?timestamp="+System.currentTimeMillis());
+        userRepository.save(user);
+        return "";
+    }
+
+    //TODO: Will be move to Amazon S3 or CloudFlare or Cloudinary
+    private final BiFunction<String,MultipartFile,String> photoFunction = (userId, file) -> {
+        var fileName = userId+".png";
+        try {
+            var fileStorageLocation = Paths.get(PHOTO_DIRECTORY).toAbsolutePath().normalize();
+            if(!Files.exists(fileStorageLocation)){
+                Files.createDirectories(fileStorageLocation);
+            }
+            Files.copy(file.getInputStream(), fileStorageLocation.resolve(fileName), REPLACE_EXISTING);
+            return ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/user/image/"+ fileName)
+                    .toUriString();
+        }catch (Exception e){
+            throw new APIException("Photo upload failed");
+        }
+    };
+
+    private User getUserEntityByUserId(String userId) {
+        return userRepository.findUserByUserId(userId).orElseThrow(() -> new APIException("User not found"));
     }
 
     private boolean verifyCode(String qrCode, String qrCodeSecret) {

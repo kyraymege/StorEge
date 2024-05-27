@@ -4,11 +4,9 @@ import com.kyraymege.StorEge.business.abstracts.JwtService;
 import com.kyraymege.StorEge.business.abstracts.UserService;
 import com.kyraymege.StorEge.domain.Response;
 import com.kyraymege.StorEge.entity.dto.UserDto;
-import com.kyraymege.StorEge.entity.dto.dtoRequest.EmailRequest;
-import com.kyraymege.StorEge.entity.dto.dtoRequest.QrCodeRequest;
-import com.kyraymege.StorEge.entity.dto.dtoRequest.ResetPasswordRequest;
-import com.kyraymege.StorEge.entity.dto.dtoRequest.UserRequest;
+import com.kyraymege.StorEge.entity.dto.dtoRequest.*;
 import com.kyraymege.StorEge.entity.enums.TokenType;
+import com.kyraymege.StorEge.exceptions.handler.ApiLogoutHandler;
 import com.kyraymege.StorEge.utils.RequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,13 +15,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
 
+import static com.kyraymege.StorEge.utils.consts.Constants.PHOTO_DIRECTORY;
 import static java.util.Collections.emptyMap;
+import static org.springframework.http.MediaType.IMAGE_JPEG_VALUE;
+import static org.springframework.http.MediaType.IMAGE_PNG_VALUE;
 
 @RestController
 @RequestMapping(path = {"/user"})
@@ -32,6 +38,7 @@ import static java.util.Collections.emptyMap;
 public class UserController {
     private final UserService userService;
     private final JwtService jwtService;
+    private final ApiLogoutHandler apiLogoutHandler;
 
     //////////////////////////// USER REGISTIRATION - START ////////////////////////////
     // USER REGISTRATION
@@ -47,7 +54,82 @@ public class UserController {
         userService.verifyAccountToken(token);
         return ResponseEntity.ok().body(RequestUtils.getResponse(request, emptyMap(), "Account Verified", HttpStatus.OK));
     }
-    //////////////////////////// USER REGISTIRATION - END ////////////////////////////
+
+    // USER PROFILE
+    @GetMapping("/profile")
+    public ResponseEntity<Response> getProfile(@AuthenticationPrincipal UserDto userPrincipal, HttpServletRequest request) {
+        var user = userService.getUserByUserId(userPrincipal.getUserId());
+        return ResponseEntity.ok().body(RequestUtils.getResponse(request, Map.of("user",user), "Profile retrieved", HttpStatus.OK));
+    }
+
+    // USER PROFILE UPDATE
+    @PatchMapping("/update")
+    public ResponseEntity<Response> updateProfile(@AuthenticationPrincipal UserDto userPrincipal,@RequestBody UserRequest userRequest , HttpServletRequest request) {
+        var user = userService.updateUser(userPrincipal.getUserId(), userRequest.getFirstName(), userRequest.getLastName(), userRequest.getEmail(),userRequest.getPhone(), userRequest.getBio());
+        return ResponseEntity.ok().body(RequestUtils.getResponse(request, Map.of("user",user), "User Updated", HttpStatus.OK));
+    }
+
+    // USER PROFILE UPDATE
+    @PatchMapping("/updateRole")
+    public ResponseEntity<Response> updateRole(@AuthenticationPrincipal UserDto userPrincipal, @RequestBody RoleRequest roleRequest , HttpServletRequest request) {
+        userService.updateRole(userPrincipal.getUserId(),roleRequest.getRole());
+        return ResponseEntity.ok().body(RequestUtils.getResponse(request, emptyMap(), "Role Updated", HttpStatus.OK));
+    }
+
+    // USER PROFILE UPDATE
+    @PatchMapping("/toogleAccountExpired")
+    public ResponseEntity<Response> toogleAccountExpired(@AuthenticationPrincipal UserDto userPrincipal , HttpServletRequest request) {
+        userService.toogleAccountExpired(userPrincipal.getUserId());
+        return ResponseEntity.ok().body(RequestUtils.getResponse(request, emptyMap(), "Role Updated", HttpStatus.OK));
+    }
+
+    // USER PROFILE UPDATE
+    @PatchMapping("/toogleAccountLocked")
+    public ResponseEntity<Response> toogleAccountLocked(@AuthenticationPrincipal UserDto userPrincipal , HttpServletRequest request) {
+        userService.toogleAccountLocked(userPrincipal.getUserId());
+        return ResponseEntity.ok().body(RequestUtils.getResponse(request, emptyMap(), "Role Updated", HttpStatus.OK));
+    }
+
+    // USER PROFILE UPDATE
+    @PatchMapping("/toogleAccountEnabled")
+    public ResponseEntity<Response> toogleAccountEnabled(@AuthenticationPrincipal UserDto userPrincipal , HttpServletRequest request) {
+        userService.toogleAccountEnabled(userPrincipal.getUserId());
+        return ResponseEntity.ok().body(RequestUtils.getResponse(request, emptyMap(), "Role Updated", HttpStatus.OK));
+    }
+
+    // USER PROFILE UPDATE
+    @PatchMapping("/toogleCredentialsExpired")
+    public ResponseEntity<Response> toogleCredentialsExpired(@AuthenticationPrincipal UserDto userPrincipal , HttpServletRequest request) {
+        userService.toogleCredentialsExpired(userPrincipal.getUserId());
+        return ResponseEntity.ok().body(RequestUtils.getResponse(request, emptyMap(), "Role Updated", HttpStatus.OK));
+    }
+
+    // USER Update Password
+    @PatchMapping("/updatePassword")
+    public ResponseEntity<Response> updatePassword(@AuthenticationPrincipal UserDto userPrincipal ,@RequestBody UpdatePasswordRequest updatePasswordRequest , HttpServletRequest request) {
+        userService.updatePassword(userPrincipal.getUserId(), updatePasswordRequest.getPassword(), updatePasswordRequest.getNewPassword(), updatePasswordRequest.getConfirmNewPassword());
+        return ResponseEntity.ok().body(RequestUtils.getResponse(request, emptyMap(), "Role Updated", HttpStatus.OK));
+    }
+
+    // USER Update Photo
+    @PatchMapping("/photo")
+    public ResponseEntity<Response> uploadPhoto(@AuthenticationPrincipal UserDto userPrincipal , @RequestParam("file") MultipartFile file, HttpServletRequest request) {
+        var imageUrl = userService.uploadPhoto(userPrincipal.getUserId(), file);
+        return ResponseEntity.ok().body(RequestUtils.getResponse(request, Map.of("imageUrl",imageUrl), "Role Updated", HttpStatus.OK));
+    }
+
+    // User Show Photo
+    @GetMapping(value = "/image/{fileName}", produces = {IMAGE_PNG_VALUE, IMAGE_JPEG_VALUE})
+    public byte[] getPhoto(@PathVariable("fileName") String fileName) throws IOException {
+        return Files.readAllBytes(Paths.get(PHOTO_DIRECTORY + fileName));
+    }
+
+    // USER Logout
+    @PatchMapping("/logout")
+    public ResponseEntity<Response> logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+        apiLogoutHandler.logout(request, response, authentication);
+        return ResponseEntity.ok().body(RequestUtils.getResponse(request, emptyMap(), "Logged Out Successfully", HttpStatus.OK));
+    }
 
     //////////////////////////// MFA/2FA - START ////////////////////////////
     // MFA/2FA SETUP
@@ -72,7 +154,6 @@ public class UserController {
         jwtService.addCookie(response, user, TokenType.REFRESH);
         return ResponseEntity.ok().body(RequestUtils.getResponse(request, Map.of("user", user), "Qr Code Verified", HttpStatus.OK));
     }
-    //////////////////////////// MFA/2FA - END ////////////////////////////
 
     //////////////////////////// RESET PASSWORD - START ////////////////////////////
     // RESET PASSWORD
@@ -96,7 +177,6 @@ public class UserController {
         return ResponseEntity.ok().body(RequestUtils.getResponse(request, emptyMap(), "Password has been changed!", HttpStatus.OK));
     }
 
-    //////////////////////////// RESET PASSWORD - END ////////////////////////////
 
 
     private URI getUri() {

@@ -57,7 +57,7 @@ public class UserUtils {
     }
 
     public static boolean isCredentialsNonExpired(Credential userCredential) {
-        return userCredential.getUpdatedAt().minusDays(CRED_EXPIRED_DAYS).isAfter(LocalDateTime.now());
+        return userCredential.getUpdatedAt().plusDays(CRED_EXPIRED_DAYS).isAfter(LocalDateTime.now());
     }
 
     public static BiFunction<String, String, QrData> qrCodeFunction = (email, secret) -> new QrData.Builder()
