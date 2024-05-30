@@ -45,8 +45,8 @@ public class FilterChainConfig {
                 .authorizeHttpRequests(request ->
                         request.requestMatchers(PUBLIC_ROUTES).permitAll()
                                 .requestMatchers(HttpMethod.OPTIONS).permitAll()
-                                .requestMatchers(HttpMethod.DELETE, "/user/delete/**").hasAnyAuthority("user:delete")
-                                .requestMatchers(HttpMethod.DELETE, "/document/delete/**").hasAnyAuthority("document:delete")
+                                .requestMatchers(HttpMethod.DELETE, "/user/**").hasAnyAuthority("user:delete")
+                                .requestMatchers(HttpMethod.DELETE, "/document/**").hasAnyAuthority("document:delete")
                         .anyRequest().authenticated())
                 .with(apiHttpConfigurer, Customizer.withDefaults());
                return http.build();

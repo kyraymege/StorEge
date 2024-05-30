@@ -42,4 +42,6 @@ public interface UserService {
     void updatePassword(String userId, String password, String newPassword, String confirmNewPassword);
 
     String uploadPhoto(String userId, MultipartFile file);
+
+    UserDto getUserById(Long id);
 }

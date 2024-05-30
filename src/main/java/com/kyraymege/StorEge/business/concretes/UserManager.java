@@ -40,7 +40,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 
 import static com.kyraymege.StorEge.utils.UserUtils.*;
-import static com.kyraymege.StorEge.utils.consts.Constants.PHOTO_DIRECTORY;
+import static com.kyraymege.StorEge.utils.consts.Constants.FILE_DIRECTORY;
 import static com.kyraymege.StorEge.utils.validation.UserValidation.verifyAccountStatus;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -259,11 +259,17 @@ public class UserManager implements UserService {
         return "";
     }
 
+    @Override
+    public UserDto getUserById(Long id) {
+        var user = userRepository.findById(id).orElseThrow(() -> new APIException("User not found"));
+        return EntityToDto(user, user.getRole(), getUserCredentialById(user.getId()));
+    }
+
     //TODO: Will be move to Amazon S3 or CloudFlare or Cloudinary
     private final BiFunction<String,MultipartFile,String> photoFunction = (userId, file) -> {
         var fileName = userId+".png";
         try {
-            var fileStorageLocation = Paths.get(PHOTO_DIRECTORY).toAbsolutePath().normalize();
+            var fileStorageLocation = Paths.get(FILE_DIRECTORY).toAbsolutePath().normalize();
             if(!Files.exists(fileStorageLocation)){
                 Files.createDirectories(fileStorageLocation);
             }
