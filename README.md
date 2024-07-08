@@ -8,8 +8,6 @@ StorEge is a Java-based application designed to provide efficient and scalable s
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
 
 ## Introduction
 StorEge aims to deliver a robust and flexible storage service. It leverages modern technologies to ensure data integrity, availability, and scalability.
