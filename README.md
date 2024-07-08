@@ -49,9 +49,3 @@ Once the application is up and running, you can interact with it via the provide
 - **Data Storage**: Users should be able to upload, download, and manage their files.
 - **Data Security**: All data transactions must be secure and encrypted.
 - **Scalability**: The system should handle increasing amounts of data seamlessly.
-
-## Contributing
-Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTING.md) for more details.
-
-## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
